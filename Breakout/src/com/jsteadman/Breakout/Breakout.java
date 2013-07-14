@@ -35,15 +35,14 @@ public class Breakout extends GraphicsProgram {
 	private final int BRICK_HEIGHT = 8;
 	private final int BRICK_WIDTH = (APPLET_WIDTH / BRICK_COLUMNS)
 			- BRICK_SEPARATION;
+	private static Color BRICK_COLOR;
 
 	// constants for ball
-	final private int BALL_RADIUS = 10;
-	final private int BALL_X = APPLET_WIDTH / 2 - BALL_RADIUS;
-	final private int BALL_Y = APPLET_HEIGHT / 2 - BALL_RADIUS;
-	final private int BALL_DIAMETER = 2 * BALL_RADIUS;
+	private final int BALL_RADIUS = 10;
+	private final int BALL_X = APPLET_WIDTH / 2 - BALL_RADIUS;
+	private final int BALL_Y = APPLET_HEIGHT / 2 - BALL_RADIUS;
+	private final int BALL_DIAMETER = 2 * BALL_RADIUS;	
 
-	private static Color BRICK_COLOR;
-	
 	// constants for counter and keeping score
 	private int BRICK_COUNTER = BRICK_COLUMNS * BRICK_ROWS;
 	private int POINTS;
@@ -56,7 +55,7 @@ public class Breakout extends GraphicsProgram {
 	private GRoundRect paddle;
 
 	// constants for ball velocity
-	private double ballVX = 3;
+	private double ballVX;
 	private double ballVY;
 
 	// random generator used to determine initial ball direction
@@ -73,12 +72,10 @@ public class Breakout extends GraphicsProgram {
 		moveBall();
 	}
 
-	public void createBricks() {
+	private void createBricks() {
 
 		/*
 		 * adjust the color of the bricks based every two rows
-		 * 
-		 * TODO - create an array using % instead
 		 */
 
 		for (int j = 1; j <= BRICK_ROWS; j++) {
@@ -116,7 +113,7 @@ public class Breakout extends GraphicsProgram {
 	/*
 	 * Create the paddle.
 	 */
-	public void thePaddle() {
+	private void thePaddle() {
 		paddle = new GRoundRect(PADDLE_WIDTH, PADDLE_HEIGHT);
 		paddle.setFillColor(Color.DARK_GRAY);
 		paddle.setFilled(true);
@@ -125,11 +122,7 @@ public class Breakout extends GraphicsProgram {
 	}
 
 	/*
-	 * Handles controlling the paddle with the arrow keys
-	 * 
-	 * TODO - add key events to pause game
-	 * 
-	 * TODO - add mouse controls
+	 * Handles controlling the paddle with the arrow keys.
 	 * 
 	 * (non-Javadoc)
 	 * 
@@ -150,7 +143,7 @@ public class Breakout extends GraphicsProgram {
 			if (x > 0) {
 				paddle.move(-PADDLE_WIDTH, y);
 			}
-			break;			
+			break;
 		default:
 			break;
 		}
@@ -160,8 +153,9 @@ public class Breakout extends GraphicsProgram {
 	 * Create the ball.
 	 */
 	private void theBall() {
-		// launches ball in random direction between 1 and 3
-		ballVY = rand.nextDouble(1.0, 3.0);
+		// launches ball in random direction
+		ballVY = rand.nextDouble(2.0, 3.0);
+		ballVX = rand.nextDouble(2.5, 3.0);
 		ball = new GOval(BALL_DIAMETER, BALL_DIAMETER);
 		ball.setFillColor(Color.DARK_GRAY);
 		ball.setFilled(true);
@@ -199,7 +193,7 @@ public class Breakout extends GraphicsProgram {
 	 */
 	private void moveBall() {
 		boolean play = true;
-		
+
 		while (play) {
 			// bounce ball off walls and ceiling
 			if (ball.getX() > APPLET_WIDTH - BALL_DIAMETER || ball.getX() <= 0) {
@@ -212,43 +206,54 @@ public class Breakout extends GraphicsProgram {
 			GObject collider = detectCollision();
 			if (collider == paddle) {
 				ballVY = -ballVY;
-			/*
-			 * If the ball touches anything other than the walls and paddle, remove it.
-			 */
-			} else if (collider != null) {				
+
+			// do nothing for score and points
+			} else if (collider == wordScore) {
+			} else if (collider == displayPoints) {
+
+			// handle the bricks
+			} else if (collider != null) {
 				ballVY = -ballVY;
+
 				/*
-				 * Count down from the total number of bricks each time one is removed.
+				 * Increase ball velocity
+				 */
+				ballVY += rand.nextDouble(0.005, 0.015);
+				ballVX += rand.nextDouble(0.003, 0.007);
+				/*
+				 * Count down from the total number of bricks each time one is
+				 * removed.
 				 */
 				BRICK_COUNTER--;
 				/*
-				 * The displayPoints must first be removed before setting the new value.
-				 * Otherwise, the new value is always written on top of the previous.
+				 * The displayPoints must first be removed before setting the
+				 * new value. Otherwise, the new value is always written on top
+				 * of the previous.
 				 */
 				remove(displayPoints);
 				/*
-				 * The GObejct collider is sent to the track points method so we can get
-				 * the color of the object for tracking the points.
+				 * The GObejct collider is sent to the track points method so we
+				 * can get the color of the object for tracking the points.
 				 */
 				trackPoints(collider);
 				/*
-				 * Remove the object.
+				 * Remove the brick.
 				 */
 				remove(collider);
 				if (BRICK_COUNTER == 0) {
 					play = false;
 				}
-			/*
-			 * Break the while loop if the ball touches the bottom of the screen
-			 * thus ending the game.
-			 */
+				/*
+				 * Break the while loop if the ball touches the bottom of the
+				 * screen thus ending the game.
+				 */
 			} else if (ball.getY() >= APPLET_HEIGHT - BALL_DIAMETER) {
 				play = false;
 				/*
-				 * Pause briefly to prevent the ball from bouncing off the bottom
-				 * of the screen.
+				 * Pause briefly to prevent the ball from bouncing off the
+				 * bottom of the screen.
 				 */
-				pause(10);
+				pause(20);
 			}
 
 			// move the ball
@@ -260,18 +265,16 @@ public class Breakout extends GraphicsProgram {
 		// Call the endGame() method if the while loop is broken
 		endGame();
 	}
-	
+
 	/*
-	 * Use two separate methods for the score. One for just the word "Score"
-	 * and another to track the points. This is so we don't redraw the word
-	 * every time we score which causes a minor blip. It looks much cleaner.
+	 * Use two separate methods for the score. One for just the word "Score" and
+	 * another to track the points. This is so we don't redraw the word every
+	 * time we score which causes a minor blip. It looks much cleaner.
 	 */
 	private void wordScore() {
-		/* 
-		 * We have to set the initial points to zero here. If we don't
-		 * then there is nothing to remove and the program will crash. 
-		 * A null check could be used instead, but I feel setting the 
-		 * initial value to zero looks better overall.
+		/*
+		 * We have to set the initial points to zero here. If we don't then
+		 * there is nothing to remove and the program will crash.
 		 */
 		POINTS = 0;
 		displayPoints = new GLabel("" + POINTS);
@@ -285,34 +288,30 @@ public class Breakout extends GraphicsProgram {
 		wordScore.setLocation(5, 25);
 		wordScore.setFont(new Font("Arial", Font.PLAIN, 20));
 		add(wordScore);
-		
+
 	}
-	
+
 	/*
-	 * This method keeps track of the points accumulated. We use the
-	 * getColor() method to return the color of the collider and adjust
-	 * the points based on that color.
+	 * This method keeps track of the points accumulated. We use the getColor()
+	 * method to return the color of the collider and adjust the points based on
+	 * that color.
 	 */
 	private void trackPoints(GObject collider) {
-		
+
 		BRICK_COLOR = collider.getColor();
-		
+
 		if (BRICK_COLOR == Color.CYAN) {
-			POINTS +=10;
-		}
-		else if (BRICK_COLOR == Color.GREEN) {
+			POINTS += 10;
+		} else if (BRICK_COLOR == Color.GREEN) {
 			POINTS += 20;
-		}
-		else if (BRICK_COLOR == Color.YELLOW) {
+		} else if (BRICK_COLOR == Color.YELLOW) {
 			POINTS += 30;
-		}
-		else if (BRICK_COLOR == Color.ORANGE) {
+		} else if (BRICK_COLOR == Color.ORANGE) {
 			POINTS += 40;
-		}
-		else if (BRICK_COLOR == Color.RED) {
+		} else if (BRICK_COLOR == Color.RED) {
 			POINTS += 50;
 		}
-		
+
 		displayPoints = new GLabel("" + POINTS);
 		displayPoints.setLocation(65, 25);
 		displayPoints.setFont(new Font("Arial", Font.PLAIN, 20));
@@ -325,21 +324,20 @@ public class Breakout extends GraphicsProgram {
 	private void endGame() {
 		GLabel end;
 		/*
-		 * If the game ends and the brick counter is 0 then all the 
-		 * bricks have been removed and the user has won the game.
+		 * If the game ends and the brick counter is 0 then all the bricks have
+		 * been removed and the user has won the game.
 		 */
 		if (BRICK_COUNTER == 0) {
 			end = new GLabel("Congratulations! You won!");
 			end.setFont(new Font("Arial", Font.BOLD, 20));
 			end.setColor(Color.BLUE);
-		/*
-		 * If there are bricks remaining when the game has ended then
-		 * it is a game over.
-		 */
+			/*
+			 * If there are bricks remaining when the game has ended then the
+			 * game is lost.
+			 */
 		} else {
 			// a tribute to Hudson
 			end = new GLabel("Game Over, Man!");
-			// TODO - fix fonts
 			end.setFont(new Font("Arial", Font.BOLD, 20));
 			end.setColor(Color.RED);
 		}

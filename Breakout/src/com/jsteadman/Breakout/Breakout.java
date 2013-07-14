@@ -43,7 +43,6 @@ public class Breakout extends GraphicsProgram {
 	final private int BALL_DIAMETER = 2 * BALL_RADIUS;
 
 	private static Color BRICK_COLOR;
-	private static Color BORDER_COLOR;
 	
 	// constants for counter and keeping score
 	private int BRICK_COUNTER = BRICK_COLUMNS * BRICK_ROWS;
@@ -85,24 +84,19 @@ public class Breakout extends GraphicsProgram {
 		for (int j = 1; j <= BRICK_ROWS; j++) {
 			if (j <= 2) {
 				BRICK_COLOR = Color.RED;
-				BORDER_COLOR = Color.RED;
 			} else if (j > 2 && j <= 4) {
 				BRICK_COLOR = Color.ORANGE;
-				BORDER_COLOR = Color.ORANGE;
 			} else if (j > 4 && j <= 6) {
 				BRICK_COLOR = Color.YELLOW;
-				BORDER_COLOR = Color.YELLOW;
 			} else if (j > 6 && j <= 8) {
 				BRICK_COLOR = Color.GREEN;
-				BORDER_COLOR = Color.GREEN;
 			} else if (j > 8) {
 				BRICK_COLOR = Color.CYAN;
-				BORDER_COLOR = Color.CYAN;
 			}
 			for (int i = 1; i <= (BRICK_COLUMNS); i++) {
 				brick = new GRect(BRICK_WIDTH, BRICK_HEIGHT);
 				brick.setFillColor(BRICK_COLOR);
-				brick.setColor(BORDER_COLOR);
+				brick.setColor(BRICK_COLOR);
 				brick.setFilled(true);
 				brick.setLocation(BRICK_X, BRICK_Y);
 				BRICK_X += BRICK_WIDTH + BRICK_SEPARATION;

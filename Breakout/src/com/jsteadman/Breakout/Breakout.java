@@ -41,7 +41,8 @@ public class Breakout extends GraphicsProgram {
 	private final int BALL_RADIUS = 10;
 	private final int BALL_X = APPLET_WIDTH / 2 - BALL_RADIUS;
 	private final int BALL_Y = APPLET_HEIGHT / 2 - BALL_RADIUS;
-	private final int BALL_DIAMETER = 2 * BALL_RADIUS;	
+	private final int BALL_DIAMETER = 2 * BALL_RADIUS;
+	private float BALL_DELAY = 13;
 
 	// constants for counter and keeping score
 	private int BRICK_COUNTER = BRICK_COLUMNS * BRICK_ROWS;
@@ -55,7 +56,7 @@ public class Breakout extends GraphicsProgram {
 	private GRoundRect paddle;
 
 	// constants for ball velocity
-	private double ballVX;
+	private double ballVX = 3;
 	private double ballVY;
 
 	// random generator used to determine initial ball direction
@@ -154,8 +155,7 @@ public class Breakout extends GraphicsProgram {
 	 */
 	private void theBall() {
 		// launches ball in random direction
-		ballVY = rand.nextDouble(2.0, 3.0);
-		ballVX = rand.nextDouble(2.5, 3.0);
+		ballVY = rand.nextDouble(1.0, 3.0);
 		ball = new GOval(BALL_DIAMETER, BALL_DIAMETER);
 		ball.setFillColor(Color.DARK_GRAY);
 		ball.setFilled(true);
@@ -196,30 +196,36 @@ public class Breakout extends GraphicsProgram {
 
 		while (play) {
 			// bounce ball off walls and ceiling
-			if (ball.getX() > APPLET_WIDTH - BALL_DIAMETER || ball.getX() <= 0) {
-				ballVX = -ballVX;
+			if (ball.getX() >= APPLET_WIDTH - BALL_DIAMETER) {
+				ballVX = -Math.abs(ballVX);
 			}
-			if (ball.getY() >= APPLET_HEIGHT - BALL_DIAMETER
-					|| ball.getY() <= 0) {
-				ballVY = -ballVY;
+			if (ball.getX() <= 0) {
+				ballVX = Math.abs(ballVX);
+			}
+			if (ball.getY() <= 0) {
+				ballVY = Math.abs(ballVY);
 			}
 			GObject collider = detectCollision();
-			if (collider == paddle) {
-				ballVY = -ballVY;
+			if (collider == paddle && ballVY > 0) {
+				ballVY = -Math.abs(ballVY);
+			} else if (collider == paddle && ballVY < 0) {
+				ballVY = Math.abs(ballVY);
 
-			// do nothing for score and points
-			} else if (collider == wordScore) {
-			} else if (collider == displayPoints) {
+				// do nothing for score and points
+			} else if (collider == wordScore || collider == displayPoints) {
 
-			// handle the bricks
+				// handle the bricks
 			} else if (collider != null) {
-				ballVY = -ballVY;
+				if (ballVY > 0) {
+					ballVY = -Math.abs(ballVY);
+				} else if (ballVY < 0) {
+					ballVY = Math.abs(ballVY);
+				}
 
 				/*
 				 * Increase ball velocity
 				 */
-				ballVY += rand.nextDouble(0.005, 0.015);
-				ballVX += rand.nextDouble(0.003, 0.007);
+				BALL_DELAY -= 0.05;
 				/*
 				 * Count down from the total number of bricks each time one is
 				 * removed.
@@ -247,19 +253,18 @@ public class Breakout extends GraphicsProgram {
 				 * Break the while loop if the ball touches the bottom of the
 				 * screen thus ending the game.
 				 */
-			} else if (ball.getY() >= APPLET_HEIGHT - BALL_DIAMETER) {
+			} else if (ball.getY() > APPLET_HEIGHT - BALL_DIAMETER) {
 				play = false;
 				/*
 				 * Pause briefly to prevent the ball from bouncing off the
 				 * bottom of the screen.
 				 */
-				pause(20);
 			}
 
 			// move the ball
 			ball.move(ballVX, ballVY);
 			// set the speed of the moving ball
-			pause(10);
+			pause(BALL_DELAY);
 		}
 
 		// Call the endGame() method if the while loop is broken

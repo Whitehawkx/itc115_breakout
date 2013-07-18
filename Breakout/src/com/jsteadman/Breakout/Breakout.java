@@ -65,12 +65,13 @@ public class Breakout extends GraphicsProgram {
 	// difficulty
 	int difficulty;
 
+	// replay
+	String userResponse;
+
 	public void run() {
 		setSize(APPLET_WIDTH, APPLET_HEIGHT);
 		addKeyListeners();
-		chooseDifficulty();
-		waitForClick();
-		moveBall();
+		chooseDifficulty();		
 	}
 
 	/*
@@ -81,6 +82,8 @@ public class Breakout extends GraphicsProgram {
 		createBricks();
 		theBall();
 		thePaddle();
+		waitForClick();
+		moveBall();
 	}
 
 	/*
@@ -244,6 +247,12 @@ public class Breakout extends GraphicsProgram {
 			break;
 		case KeyEvent.VK_3:
 			difficulty = 3;
+			break;
+		case KeyEvent.VK_Y:
+			userResponse = "y";
+			break;
+		case KeyEvent.VK_N:
+			userResponse = "n";
 			break;
 		default:
 			break;
@@ -450,14 +459,41 @@ public class Breakout extends GraphicsProgram {
 				- end.getHeight() / 2);
 		add(end);
 		pause(500);
-		// TODO - make the game restart instead of closing
-		GLabel click = new GLabel(
-				"Click anywhere on the screen to close the application");
-		click.setLocation(getWidth() / 2 - click.getWidth() / 2, getHeight()
-				/ 2 + end.getHeight());
-		add(click);
-		waitForClick();
-		System.exit(0);
+		replayGame();
+	}
+	
+	/*
+	 * This method is called at the end of the endGame() method. It asks the user
+	 * whether they would like to replay or not. If they choose yes, everything is
+	 * removed and the Y location for the bricks is reset. Then the chooseDifficulty()
+	 * method is re-called and everything resumes like when the game is initially
+	 * started. If the user says no they do not want to replay, the game closes.
+	 */
+	private void replayGame() {
+		GLabel replay = new GLabel("Would you like to play again?" + "\n"
+				+ "Press Y or N");
+		replay.setFont(new Font("Arial", Font.PLAIN, 20));
+		replay.setLocation(getWidth() / 2 - replay.getWidth() / 2, getHeight()
+				/ 2 + replay.getHeight());
+		add(replay);
+
+		userResponse = "";
+
+		while (userResponse != "y") {
+
+			pause(50);
+
+			if (userResponse == "y") {
+				removeAll(); // remove everything on the screen
+				BRICK_Y = 70; // reset Y location of bricks for loop
+				chooseDifficulty();
+			}
+			if (userResponse == "n") {
+				System.exit(0);
+			}
+
+		}
+
 	}
 
 }

@@ -21,9 +21,9 @@ public class Breakout extends GraphicsProgram {
 
 	// constants for paddle
 	private final int PADDLE_Y_OFFSET = 30;
-	private final int PADDLE_WIDTH = 60;
+	private int PADDLE_WIDTH;
 	private final int PADDLE_HEIGHT = 10;
-	private final int PADDLE_X = APPLET_WIDTH / 2 - PADDLE_WIDTH / 2;
+	private int PADDLE_X;
 	private final int PADDLE_Y = APPLET_HEIGHT - PADDLE_Y_OFFSET;
 
 	// constants for bricks
@@ -42,35 +42,112 @@ public class Breakout extends GraphicsProgram {
 	private final int BALL_X = APPLET_WIDTH / 2 - BALL_RADIUS;
 	private final int BALL_Y = APPLET_HEIGHT / 2 - BALL_RADIUS;
 	private final int BALL_DIAMETER = 2 * BALL_RADIUS;
-	private float BALL_DELAY = 13;
+	private float BALL_DELAY;
 
-	// constants for counter and keeping score
+	// counter and keeping score
 	private int BRICK_COUNTER = BRICK_COLUMNS * BRICK_ROWS;
 	private int POINTS;
 	GLabel wordScore;
 	GLabel displayPoints;
 
-	// constants for each object
+	// variables for objects
 	private GRect brick;
 	private GOval ball;
 	private GRoundRect paddle;
 
-	// constants for ball velocity
+	// ball velocity
 	private double ballVX = 3;
 	private double ballVY;
 
 	// random generator used to determine initial ball direction
 	RandomGenerator rand = new RandomGenerator();
 
+	// difficulty
+	int difficulty;
+
 	public void run() {
 		setSize(APPLET_WIDTH, APPLET_HEIGHT);
+		addKeyListeners();
+		chooseDifficulty();
+		waitForClick();
+		moveBall();
+	}
+
+	/*
+	 * This method is used to call everything needed in order to play the game.
+	 */
+	private void setUpGame() {
 		wordScore();
 		createBricks();
 		theBall();
 		thePaddle();
-		addKeyListeners();
-		waitForClick();
-		moveBall();
+	}
+
+	/*
+	 * Here we allow the user to choose a difficulty for playing.
+	 * 
+	 * 1 - easy
+	 * 2 - medium
+	 * 3 - hard
+	 * 
+	 * The values for the ball delay and paddle are changed depending on what
+	 * difficulty is chosen. After a difficulty is chosen and values are set,
+	 * the setUpGame() method is called.
+	 */
+	private void chooseDifficulty() {
+		GLabel diff = new GLabel("Please select a difficulty");
+		diff.setColor(Color.GREEN);
+		diff.setFont(new Font("Arial", Font.PLAIN, 20));
+		diff.setLocation(APPLET_WIDTH / 2 - diff.getWidth() / 2, APPLET_HEIGHT
+				/ 2 - diff.getHeight() / 2);
+		add(diff);
+
+		GLabel easy = new GLabel("Press 1 for EASY");
+		easy.setColor(Color.ORANGE);
+		easy.setFont(new Font("Arial", Font.PLAIN, 15));
+		easy.setLocation(APPLET_WIDTH / 2 - easy.getWidth() / 2, APPLET_HEIGHT
+				/ 2 + easy.getHeight());
+		add(easy);
+
+		GLabel medium = new GLabel("Press 2 for MEDIUM");
+		medium.setColor(Color.CYAN);
+		medium.setFont(new Font("Arial", Font.PLAIN, 15));
+		medium.setLocation(APPLET_WIDTH / 2 - easy.getWidth() / 2,
+				APPLET_HEIGHT / 2 + medium.getHeight() * 2);
+		add(medium);
+
+		GLabel hard = new GLabel("Press 3 for HARD");
+		hard.setColor(Color.RED);
+		hard.setFont(new Font("Arial", Font.PLAIN, 15));
+		hard.setLocation(APPLET_WIDTH / 2 - easy.getWidth() / 2, APPLET_HEIGHT
+				/ 2 + medium.getHeight() * 3);
+		add(hard);
+
+		difficulty = 0;
+
+		while (difficulty == 0) {
+
+			pause(50);
+		}
+
+		if (difficulty == 1) {
+			PADDLE_WIDTH = 60;
+			BALL_DELAY = 15;
+		} else if (difficulty == 2) {
+			PADDLE_WIDTH = 50;
+			BALL_DELAY = 13;
+		} else if (difficulty == 3) {
+			PADDLE_WIDTH = 40;
+			BALL_DELAY = 11;
+		}
+		// set starting location for paddle here
+		PADDLE_X = APPLET_WIDTH / 2 - PADDLE_WIDTH / 2;
+		remove(diff);
+		remove(easy);
+		remove(medium);
+		remove(hard);
+		setUpGame();
+
 	}
 
 	private void createBricks() {
@@ -130,20 +207,43 @@ public class Breakout extends GraphicsProgram {
 	 * @see acm.program.Program#keyPressed(java.awt.event.KeyEvent)
 	 */
 	public void keyPressed(KeyEvent e) {
-		double x = paddle.getX();
-		double y = 0;
+
+		/*
+		 * A null check is used here since the paddle method has not yet been
+		 * called to prevent the game from crashing.
+		 */
+		if (paddle != null) {
+			double x = paddle.getX();
+			double y = 0;
+
+			switch (e.getKeyCode()) {
+
+			case KeyEvent.VK_RIGHT:
+				if (x < (APPLET_WIDTH - PADDLE_WIDTH) - PADDLE_WIDTH) {
+					paddle.move(PADDLE_WIDTH, y);
+				} else {
+					paddle.move(APPLET_WIDTH - x - PADDLE_WIDTH, y);
+				}
+				break;
+			case KeyEvent.VK_LEFT:
+				if (x > 0 && x > PADDLE_WIDTH) {
+					paddle.move(-PADDLE_WIDTH, y);
+				} else {
+					paddle.move(-x, y);
+				}
+				break;
+			}
+		}
 
 		switch (e.getKeyCode()) {
-		case KeyEvent.VK_RIGHT:
-			if (x < (APPLET_WIDTH - PADDLE_WIDTH)) {
-				paddle.move(PADDLE_WIDTH, y);
-			}
-
+		case KeyEvent.VK_1:
+			difficulty = 1;
 			break;
-		case KeyEvent.VK_LEFT:
-			if (x > 0) {
-				paddle.move(-PADDLE_WIDTH, y);
-			}
+		case KeyEvent.VK_2:
+			difficulty = 2;
+			break;
+		case KeyEvent.VK_3:
+			difficulty = 3;
 			break;
 		default:
 			break;

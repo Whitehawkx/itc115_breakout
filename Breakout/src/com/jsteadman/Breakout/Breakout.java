@@ -21,9 +21,9 @@ public class Breakout extends GraphicsProgram {
 
 	// constants for paddle
 	private final int PADDLE_Y_OFFSET = 30;
-	private int PADDLE_WIDTH;
+	private double PADDLE_WIDTH;
 	private final int PADDLE_HEIGHT = 10;
-	private int PADDLE_X;
+	private double PADDLE_X;
 	private final int PADDLE_Y = APPLET_HEIGHT - PADDLE_Y_OFFSET;
 
 	// constants for bricks
@@ -99,7 +99,7 @@ public class Breakout extends GraphicsProgram {
 	 */
 	private void chooseDifficulty() {
 		GLabel diff = new GLabel("Please select a difficulty");
-		diff.setColor(Color.GREEN);
+		diff.setColor(Color.BLUE);
 		diff.setFont(new Font("Arial", Font.PLAIN, 20));
 		diff.setLocation(APPLET_WIDTH / 2 - diff.getWidth() / 2, APPLET_HEIGHT
 				/ 2 - diff.getHeight() / 2);
@@ -125,6 +125,13 @@ public class Breakout extends GraphicsProgram {
 		hard.setLocation(APPLET_WIDTH / 2 - easy.getWidth() / 2, APPLET_HEIGHT
 				/ 2 + medium.getHeight() * 3);
 		add(hard);
+		
+		GLabel troll = new GLabel("Press 4 for TROLL");
+		troll.setColor(Color.GREEN);
+		troll.setFont(new Font("Arial", Font.PLAIN, 15));
+		troll.setLocation(APPLET_WIDTH / 2 - easy.getWidth() / 2, APPLET_HEIGHT
+				/ 2 + medium.getHeight() * 4);
+		add(troll);
 
 		difficulty = 0;
 
@@ -142,6 +149,10 @@ public class Breakout extends GraphicsProgram {
 		} else if (difficulty == 3) {
 			PADDLE_WIDTH = 40;
 			BALL_DELAY = 13;
+		// troll mode just for fun!
+		} else if (difficulty == 4) {
+			PADDLE_WIDTH = 50;
+			BALL_DELAY = 13;
 		}
 		// set starting location for paddle here
 		PADDLE_X = APPLET_WIDTH / 2 - PADDLE_WIDTH / 2;
@@ -149,6 +160,7 @@ public class Breakout extends GraphicsProgram {
 		remove(easy);
 		remove(medium);
 		remove(hard);
+		remove(troll);
 		setUpGame();
 
 	}
@@ -201,6 +213,29 @@ public class Breakout extends GraphicsProgram {
 		paddle.setLocation(PADDLE_X, PADDLE_Y);
 		add(paddle);
 	}
+	
+	/*
+	 * Troll mode!
+	 * 
+	 * I'm a dirty stinker.
+	 * 
+	 * With this mode active the paddle shrinks half a pixel every time
+	 * a brick is removed. With one brick remaining the paddle will only
+	 * be 0.5 pixels wide. I suppose it's beatable... MAYBE. ;)
+	 */
+	private void changePaddleWidth() {
+		double x = paddle.getX() + 0.25;
+		double y = paddle.getY();
+		
+		remove(paddle);
+		PADDLE_WIDTH -=0.5;
+		paddle = new GRoundRect(PADDLE_WIDTH, PADDLE_HEIGHT);
+		paddle.setFillColor(Color.DARK_GRAY);
+		paddle.setFilled(true);
+		paddle.setLocation(x, y);		
+		add(paddle);;
+		
+	}
 
 	/*
 	 * Handles controlling the paddle with the arrow keys.
@@ -247,6 +282,9 @@ public class Breakout extends GraphicsProgram {
 			break;
 		case KeyEvent.VK_3:
 			difficulty = 3;
+			break;
+		case KeyEvent.VK_4:
+			difficulty = 4;
 			break;
 		case KeyEvent.VK_Y:
 			userResponse = "y";
@@ -335,6 +373,12 @@ public class Breakout extends GraphicsProgram {
 				 * Increase ball velocity
 				 */
 				BALL_DELAY -= 0.05;
+				/*
+				 * Call method to change paddle width on troll difficulty.
+				 */
+				if (difficulty == 4) {
+					changePaddleWidth();
+				}
 				/*
 				 * Count down from the total number of bricks each time one is
 				 * removed.

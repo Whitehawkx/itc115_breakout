@@ -138,10 +138,10 @@ public class Breakout extends GraphicsProgram {
 			BALL_DELAY = 15;
 		} else if (difficulty == 2) {
 			PADDLE_WIDTH = 50;
-			BALL_DELAY = 13;
+			BALL_DELAY = 14;
 		} else if (difficulty == 3) {
 			PADDLE_WIDTH = 40;
-			BALL_DELAY = 11;
+			BALL_DELAY = 13;
 		}
 		// set starting location for paddle here
 		PADDLE_X = APPLET_WIDTH / 2 - PADDLE_WIDTH / 2;

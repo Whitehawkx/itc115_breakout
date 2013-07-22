@@ -82,7 +82,7 @@ public class Breakout extends GraphicsProgram {
 		createBricks();
 		theBall();
 		thePaddle();
-		waitForClick();
+		gameCountdown();
 		moveBall();
 	}
 
@@ -163,6 +163,20 @@ public class Breakout extends GraphicsProgram {
 		remove(troll);
 		setUpGame();
 
+	}
+
+	private void gameCountdown() {
+		for (int countdown = 4; countdown > 0; countdown--) {
+			GLabel counter = new GLabel("" + countdown);
+			counter.setColor(Color.RED);
+			counter.setFont(new Font("Arial", Font.PLAIN, 25));
+			counter.setLocation(APPLET_WIDTH / 2 - counter.getWidth() / 2,
+					APPLET_HEIGHT / 2 + counter.getHeight() * 2);
+			add(counter);
+			pause(1000);
+			remove(counter);
+
+		}
 	}
 
 	private void createBricks() {

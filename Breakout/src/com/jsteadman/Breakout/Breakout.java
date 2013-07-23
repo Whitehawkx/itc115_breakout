@@ -45,7 +45,7 @@ public class Breakout extends GraphicsProgram {
 	private float BALL_DELAY;
 
 	// counter and keeping score
-	private int BRICK_COUNTER = BRICK_COLUMNS * BRICK_ROWS;
+	private int BRICK_COUNTER;
 	private int POINTS;
 	GLabel wordScore;
 	GLabel displayPoints;
@@ -83,6 +83,9 @@ public class Breakout extends GraphicsProgram {
 	 * This method is used to call everything needed in order to play the game.
 	 */
 	private void setUpGame() {
+		// reset brick counter every time setUpGame() is called
+		BRICK_COUNTER = BRICK_COLUMNS * BRICK_ROWS;
+
 		wordScore();
 		ballsRemaining();
 		trackBallsRemaining();

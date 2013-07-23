@@ -68,6 +68,11 @@ public class Breakout extends GraphicsProgram {
 	// replay
 	String userResponse;
 
+	// balls remaining
+	GLabel wordBallsRemaining;
+	GLabel ballsRemaining;
+	int BALLS_REMAINING;
+
 	public void run() {
 		setSize(APPLET_WIDTH, APPLET_HEIGHT);
 		addKeyListeners();
@@ -79,6 +84,8 @@ public class Breakout extends GraphicsProgram {
 	 */
 	private void setUpGame() {
 		wordScore();
+		ballsRemaining();
+		trackBallsRemaining();
 		createBricks();
 		theBall();
 		thePaddle();
@@ -372,8 +379,10 @@ public class Breakout extends GraphicsProgram {
 			} else if (collider == paddle && ballVY < 0) {
 				ballVY = Math.abs(ballVY);
 
-				// do nothing for score and points
-			} else if (collider == wordScore || collider == displayPoints) {
+				// do nothing for score, points and balls remaining
+			} else if (collider == wordScore || collider == displayPoints
+					|| collider == wordBallsRemaining
+					|| collider == ballsRemaining) {
 
 				// handle the bricks
 			} else if (collider != null) {
@@ -421,11 +430,16 @@ public class Breakout extends GraphicsProgram {
 				 * screen thus ending the game.
 				 */
 			} else if (ball.getY() > APPLET_HEIGHT - BALL_DIAMETER) {
-				play = false;
-				/*
-				 * Pause briefly to prevent the ball from bouncing off the
-				 * bottom of the screen.
-				 */
+				if (BALLS_REMAINING > 0) {
+					BALLS_REMAINING--;
+					remove(ballsRemaining);
+					trackBallsRemaining();
+					remove(ball);
+					theBall();
+					pause(500);
+				} else {
+					play = false;
+				}
 			}
 
 			// move the ball
@@ -488,6 +502,30 @@ public class Breakout extends GraphicsProgram {
 		displayPoints.setLocation(65, 25);
 		displayPoints.setFont(new Font("Arial", Font.PLAIN, 20));
 		add(displayPoints);
+	}
+	
+	/*
+	 * Just like with the score, we display just the word Balls Remaining and
+	 * adjust the number independently.
+	 */
+	private void ballsRemaining() {
+		BALLS_REMAINING = 2;
+
+		wordBallsRemaining = new GLabel("Balls Remaining: ");
+		wordBallsRemaining.setLocation(235, 25);
+		wordBallsRemaining.setFont(new Font("Arial", Font.PLAIN, 20));
+		add(wordBallsRemaining);
+
+	}
+	
+	/*
+	 * This method keeps track of the number of balls remaining.
+	 */
+	private void trackBallsRemaining() {
+		ballsRemaining = new GLabel("" + BALLS_REMAINING);
+		ballsRemaining.setLocation(385, 25);
+		ballsRemaining.setFont(new Font("Arial", Font.PLAIN, 20));
+		add(ballsRemaining);
 	}
 
 	/*

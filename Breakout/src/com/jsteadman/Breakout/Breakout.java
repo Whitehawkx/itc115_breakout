@@ -377,7 +377,6 @@ public class Breakout extends GraphicsProgram {
 			if (collider == paddle && ballVY > 0) {
 				ballVY = -Math.abs(ballVY);
 			} else if (collider == paddle && ballVY < 0) {
-				ballVY = Math.abs(ballVY);
 
 				// do nothing for score, points and balls remaining
 			} else if (collider == wordScore || collider == displayPoints
